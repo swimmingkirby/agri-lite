@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import DashboardClient from "./_dashboard";
+import HistoryClient from "./_history";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 
 export const dynamic = "force-dynamic";
@@ -8,14 +8,14 @@ export default function Page() {
   return (
     <Suspense
       fallback={
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="space-y-4">
           {[0, 1, 2].map((i) => (
-            <LoadingSkeleton key={i} className="h-40" />
+            <LoadingSkeleton key={i} className="h-64" />
           ))}
         </div>
       }
     >
-      <DashboardClient />
+      <HistoryClient />
     </Suspense>
   );
 }
