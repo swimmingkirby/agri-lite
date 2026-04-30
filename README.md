@@ -70,11 +70,44 @@ A reading should appear within a few seconds via the realtime channel.
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY` (mark **Secret**)
    - `CRON_SECRET` (mark **Secret**)
-4. Deploy. Vercel reads `vercel.json` and registers the cron job at
-   `/api/cron/simulate` (every minute). It automatically attaches an
+4. Deploy. Vercel reads `vercel.json` and registers the daily cron job at
+   `/api/cron/simulate`. It automatically attaches an
    `Authorization: Bearer ${CRON_SECRET}` header.
 
-Verify the cron from the Vercel dashboard under **Cron Jobs**.
+### Why the cron is daily, not every minute
+
+The PRD asks for a once-per-minute simulator (FR1). Vercel's free
+**Hobby** plan caps cron jobs at one run per day, so `vercel.json`
+schedules `/api/cron/simulate` once daily as the architectural marker
+that the API works under Vercel's cron. The actual every-minute
+firing in production is driven by a Supabase `pg_cron` job that POSTs
+to the same endpoint. This keeps NFR7 (free-tier only) intact while
+still meeting FR1's cadence.
+
+To wire the Supabase side after deploying:
+
+1. Enable the `pg_cron` and `pg_net` extensions on your Supabase
+   project (Database → Extensions).
+2. Apply [supabase/migrations/0002_pg_cron_simulator.sql](supabase/migrations/0002_pg_cron_simulator.sql)
+   in the SQL Editor — this creates a `SECURITY DEFINER` function that
+   reads the bearer token from Supabase Vault and POSTs the deployed
+   `/api/cron/simulate` URL on a one-minute schedule.
+3. Insert your `CRON_SECRET` into Vault as the secret named
+   `agri_lite_cron_secret`:
+
+   ```sql
+   select vault.create_secret(
+     '<your CRON_SECRET>',
+     'agri_lite_cron_secret',
+     'Bearer token used by the Agri-Lite simulator pg_cron job.'
+   );
+   ```
+
+4. Edit the URL inside the function body to point at your own deployed
+   Vercel URL.
+
+Verify the Vercel daily cron from the Vercel dashboard under **Cron
+Jobs**, and the Supabase minutely cron via `select * from cron.job`.
 
 ## Project layout
 
