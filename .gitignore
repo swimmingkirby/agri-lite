@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Private dissertation handoff doc — never commit
+a.md
+agri-lite-private/
