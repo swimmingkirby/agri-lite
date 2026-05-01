@@ -128,26 +128,34 @@ run is self-contained.
 
 Five plots were created on production and seeded:
 
+After the initial seeder pass produced 2–7 day windows the scenarios
+were extended to 30-day windows with multiple events each (multiple
+drought cycles, three heatwaves of varying severity, two sunny breaks
+during the light-deprivation month, and so on). Drift was also
+boosted (moisture 0.8 → 1.5, temperature 0.3 → 0.6, light 400 → 700)
+so individual readings show more visible point-to-point variation.
+
+Re-seeded plot summary:
+
 | Plot | Scenario | Readings | Notes | Thresholds | Seed time |
 | --- | --- | --- | --- | --- | --- |
-| Healthy week | `healthy` | 2 017 | 2 | 3 | 1 653 ms |
-| Drought stress | `drought` | 1 153 | 2 | 3 | 929 ms |
-| Heatwave | `heatwave` | 577 | 1 | 3 | 781 ms |
-| Light deprivation | `light_deprivation` | 1 441 | 2 | 3 | 1 028 ms |
-| Mixed conditions | `mixed` | 2 017 | 4 | 3 | 1 131 ms |
+| Healthy week | `healthy` | 8 641 | 5 | 3 | 3 144 ms |
+| Drought stress | `drought` | 8 641 | 5 | 3 | 2 735 ms |
+| Heatwave | `heatwave` | 8 641 | 4 | 3 | 2 520 ms |
+| Light deprivation | `light_deprivation` | 8 641 | 5 | 3 | 2 461 ms |
+| Mixed conditions | `mixed` | 8 641 | 7 | 3 | 2 420 ms |
 
 Per-scenario value ranges captured directly from Postgres after the
-seed run (the curves match the intended shapes — the drought scenario
-crosses the 30 % moisture floor, the heatwave breaches 30 °C, the
-light-deprivation window stays well under 5 000 lux):
+30-day seed run (each scenario's curve clearly hits its intended
+extremes within a single demo plot):
 
 | Plot | Window | Moisture min/max | Temp min/max | Light max |
 | --- | --- | --- | --- | --- |
-| Healthy week | 7 d | 53.2 % / 60.1 % | 21.1 °C / 23.9 °C | 80 944 lux |
-| Drought stress | 4 d | **23.6 %** / 62.1 % | 22.4 °C / 26.8 °C | 81 161 lux |
-| Heatwave | 2 d | 40.6 % / 51.9 % | 21.6 °C / **38.4 °C** | 80 462 lux |
-| Light deprivation | 5 d | 52.4 % / 58.5 % | 17.3 °C / 19.7 °C | **2 437 lux** |
-| Mixed conditions | 7 d | 29.4 % / 59.0 % | 19.4 °C / 37.3 °C | 80 942 lux |
+| Healthy week | 30 d | 41.5 % / 69.5 % | 16.5 °C / 28.0 °C | 81 667 lux |
+| Drought stress | 30 d | **18.5 %** / 63.2 % | 19.3 °C / 29.2 °C | 81 763 lux |
+| Heatwave | 30 d | 40.1 % / 61.0 % | 19.0 °C / **40.7 °C** | 81 901 lux |
+| Light deprivation | 30 d | 49.8 % / 62.1 % | 14.7 °C / 22.3 °C | **42 718 lux** (sunny breaks; otherwise <3 000 lux) |
+| Mixed conditions | 30 d | 24.1 % / 64.7 % | 16.2 °C / 38.6 °C | 81 870 lux |
 
 ### Edge cases (§4 of the finalisation prompt)
 
