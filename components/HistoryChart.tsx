@@ -68,7 +68,7 @@ export default function HistoryChart({
           Not enough data yet for this range.
         </div>
       ) : (
-        <div className="h-56">
+        <div className="h-56 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={data}
