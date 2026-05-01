@@ -68,12 +68,28 @@ export default function ThresholdCard({
           max_value: max,
         }),
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) {
+        let serverMessage: string | null = null;
+        try {
+          const payload = (await res.json()) as { error?: string };
+          if (payload && typeof payload.error === "string") {
+            serverMessage = payload.error;
+          }
+        } catch {
+          // Body wasn't JSON; fall through to generic message.
+        }
+        throw new Error(serverMessage ?? "Failed");
+      }
       const data: Threshold = await res.json();
       onSaved(data);
       setSavedAt(Date.now());
-    } catch {
-      setError("Could not save. Please try again.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "";
+      setError(
+        message && message !== "Failed"
+          ? message
+          : "Could not save. Please try again.",
+      );
     } finally {
       setSaving(false);
     }

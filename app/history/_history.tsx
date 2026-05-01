@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import EmptyState from "@/components/EmptyState";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import HistoryChart from "@/components/HistoryChart";
+import ChartErrorBoundary from "@/components/ChartErrorBoundary";
 import TimeRangeSelector, {
   rangeToLimit,
   rangeToSinceMs,
@@ -100,24 +101,30 @@ export default function HistoryPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          <HistoryChart
-            parameter="moisture"
-            readings={readings}
-            notes={notes}
-            rangeMs={rangeToSinceMs(range)}
-          />
-          <HistoryChart
-            parameter="temperature"
-            readings={readings}
-            notes={notes}
-            rangeMs={rangeToSinceMs(range)}
-          />
-          <HistoryChart
-            parameter="light"
-            readings={readings}
-            notes={notes}
-            rangeMs={rangeToSinceMs(range)}
-          />
+          <ChartErrorBoundary>
+            <HistoryChart
+              parameter="moisture"
+              readings={readings}
+              notes={notes}
+              rangeMs={rangeToSinceMs(range)}
+            />
+          </ChartErrorBoundary>
+          <ChartErrorBoundary>
+            <HistoryChart
+              parameter="temperature"
+              readings={readings}
+              notes={notes}
+              rangeMs={rangeToSinceMs(range)}
+            />
+          </ChartErrorBoundary>
+          <ChartErrorBoundary>
+            <HistoryChart
+              parameter="light"
+              readings={readings}
+              notes={notes}
+              rangeMs={rangeToSinceMs(range)}
+            />
+          </ChartErrorBoundary>
         </div>
       )}
     </div>
