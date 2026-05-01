@@ -9,7 +9,7 @@ const RANGES: Record<Parameter, Range> = {
 };
 
 // Box–Muller transform for a normal distribution.
-function randomNormal(mean: number, std: number): number {
+export function randomNormal(mean: number, std: number): number {
   const u1 = Math.random() || 1e-9;
   const u2 = Math.random();
   const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
@@ -26,7 +26,7 @@ function round(n: number, dp: number): number {
 }
 
 // Modulate light by hour-of-day so it tracks a daily cycle.
-function timeOfDayLightFactor(date: Date): number {
+export function timeOfDayLightFactor(date: Date): number {
   const hour = date.getUTCHours() + date.getUTCMinutes() / 60;
   return Math.max(0, Math.sin(((hour - 6) / 12) * Math.PI));
 }
