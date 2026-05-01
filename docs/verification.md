@@ -106,3 +106,139 @@ verified:
 - A confirmed Vercel daily cron firing — first scheduled run is at
   the next 06:00 UTC after deploy. Visible in the Vercel dashboard
   under **Cron Jobs** thereafter.
+
+---
+
+## Finalisation pass (2026-05-01)
+
+Driven by the master finalisation prompt
+(`finalisation notes`). Source code, schema and PRD
+were unchanged during this pass except where listed.
+
+### Demo scenarios seeder (FR1, FR2, FR14)
+
+Added `lib/seed-scenarios.ts`, `lib/seed-runner.ts` and
+`app/api/seed/route.ts`. The route is `CRON_SECRET`-gated and shares
+the same random walk (`randomNormal`, `timeOfDayLightFactor`) as the
+live simulator — those helpers were promoted to exports in
+`lib/simulator.ts`. The seeder biases each draw toward predetermined
+target curves, then upserts the scenario's notes and thresholds and
+wipes the plot's previous readings/notes/thresholds first so each
+run is self-contained.
+
+Five plots were created on production and seeded:
+
+| Plot | Scenario | Readings | Notes | Thresholds | Seed time |
+| --- | --- | --- | --- | --- | --- |
+| Healthy week | `healthy` | 2 017 | 2 | 3 | 1 653 ms |
+| Drought stress | `drought` | 1 153 | 2 | 3 | 929 ms |
+| Heatwave | `heatwave` | 577 | 1 | 3 | 781 ms |
+| Light deprivation | `light_deprivation` | 1 441 | 2 | 3 | 1 028 ms |
+| Mixed conditions | `mixed` | 2 017 | 4 | 3 | 1 131 ms |
+
+Per-scenario value ranges captured directly from Postgres after the
+seed run (the curves match the intended shapes — the drought scenario
+crosses the 30 % moisture floor, the heatwave breaches 30 °C, the
+light-deprivation window stays well under 5 000 lux):
+
+| Plot | Window | Moisture min/max | Temp min/max | Light max |
+| --- | --- | --- | --- | --- |
+| Healthy week | 7 d | 53.2 % / 60.1 % | 21.1 °C / 23.9 °C | 80 944 lux |
+| Drought stress | 4 d | **23.6 %** / 62.1 % | 22.4 °C / 26.8 °C | 81 161 lux |
+| Heatwave | 2 d | 40.6 % / 51.9 % | 21.6 °C / **38.4 °C** | 80 462 lux |
+| Light deprivation | 5 d | 52.4 % / 58.5 % | 17.3 °C / 19.7 °C | **2 437 lux** |
+| Mixed conditions | 7 d | 29.4 % / 59.0 % | 19.4 °C / 37.3 °C | 80 942 lux |
+
+### Edge cases (§4 of the finalisation prompt)
+
+| # | Case | Result |
+| --- | --- | --- |
+| 4.1 | Delete the currently-selected plot | Created an "Empty edge-case plot", deleted while selected; URL fell back to the next plot in the list (`Mixed conditions`) and the dashboard re-rendered without intervention. |
+| 4.2 | Threshold validation, `min > max` | `PUT /api/thresholds` with `{min: 80, max: 30}` returns **HTTP 400** with `{"error":"min_value must be less than or equal to max_value"}`. |
+| 4.2b | Clearing both bounds (`null`/`null`) | Returns **HTTP 200** and the dashboard shows "Within range" for that parameter. |
+| 4.3 | Realtime channel cleanup on plot switch | Showed Drought dashboard, captured values; inserted a row directly into the database for the Healthy plot via Supabase; values on the Drought dashboard remained unchanged after 3 s, confirming the channel for the deselected plot was unsubscribed. |
+| 4.4 | Note creation with empty body | `POST /api/notes` with `{body: ""}` returns **HTTP 400** with the Zod issue (`min length 1`). |
+| 4.5 | Sparse-data history view | A freshly-created plot at `/history?plot=<new>` shows the "Not enough data yet for this range" message in each of the three chart panels and renders zero `.recharts-wrapper` elements. |
+
+### Recharts `width(-1) and height(-1)` warnings (§5.5)
+
+Three iterations were attempted:
+
+1. `w-full` on the chart-wrapping `<div>`s. No effect.
+2. Deferred render gated on a `useEffect`-set `mounted` boolean. Cut
+   warnings from 6 per page load to 3 (the dashboard sparklines).
+3. Replaced the wrapping `<div>` with a `ChartFrame` that observes
+   its own bounding rect with a `ResizeObserver` and only renders
+   children once the rect is non-zero. **No further reduction.**
+
+The remaining three warnings fire from Recharts' own
+`validateWidthAndHeight` during the `ResponsiveContainer`'s first
+render, before its internal `ResizeObserver` produces a measured
+size. Subsequent renders are correct and the visual output is
+unaffected. Documented as a known non-fatal limitation rather than
+silenced with a console.warn override.
+
+### UI / DX polish
+
+- Per-route metadata: `Dashboard | Agri-Lite`, `History | Agri-Lite`,
+  `Settings | Agri-Lite` (verified — `document.title` matches).
+- New favicon at `app/icon.svg` (rounded green tile with a
+  two-leaf-and-stem glyph) replaces the default Next.js mark.
+- `ThresholdForm` now parses the API's `{ error }` payload and
+  surfaces the server message ("min_value must be less than or
+  equal to max_value") instead of a generic "Could not save".
+- `ChartErrorBoundary` wraps each `HistoryChart` so a render-time
+  Recharts crash on malformed data shows a "Could not render chart"
+  panel with a Retry button instead of white-screening.
+- `README.md` gained a "Live demo" link, a "Demo scenarios" table
+  with a curl example, and an "Architectural notes" paragraph
+  explaining the `pg_cron` + Vercel cron split honestly.
+
+### Cold-start measurement (≈5 min idle)
+
+`pg_cron` job `agri-lite-simulate` was paused with
+`select cron.unschedule('agri-lite-simulate');` to allow the Vercel
+serverless functions to go cold. After **~5 minutes of no traffic**
+on the deployed app, each route was hit once for the cold sample,
+then three more times for the warm comparison. (A longer 30-minute
+idle was attempted but cut short to keep the build moving; 5 min is
+already comfortably past Vercel Hobby's typical idle-kill window of
+2–3 minutes for individual functions.)
+
+| Route | First hit (cold-ish) | Warm samples (s) | Cold-start overhead |
+| --- | --- | --- | --- |
+| GET `/api/plots` | **941 ms** | 0.300, 0.257, 0.258 | ≈ 683 ms |
+| GET `/api/readings?plot_id=…&limit=10` | **390 ms** | 0.358, 0.287, 0.282 | ≈ 103 ms |
+| GET `/api/thresholds?plot_id=…` | **278 ms** | 0.256, 0.287, 0.252 | ≈ 22 ms (already warm) |
+| GET `/api/notes?plot_id=…` | **515 ms** | 0.260, 0.260, 0.267 | ≈ 255 ms |
+| POST `/api/cron/simulate` (auth) | **2 340 ms** | 2.052, 1.519, 1.361 | ≈ 821 ms |
+
+Two findings worth carrying into Chapter 7:
+
+1. **Cold-start overhead varies by route.** `/api/plots` and
+   `/api/cron/simulate` both went genuinely cold (683 ms and 821 ms
+   above warm respectively). `/api/thresholds` showed essentially no
+   overhead, suggesting Vercel's platform may keep some functions
+   warm via internal health probes even when application traffic is
+   absent — i.e. cold-starts are observable but not uniform across
+   serverless functions on the same project.
+2. **Warm latency on `/api/cron/simulate` scaled with plot count.**
+   The original verification log measured 490 ms with 2 plots; the
+   warm median here is 1.52 s with 5 plots. The route does one
+   `SELECT` + one `INSERT` per plot per call, so its execution time
+   is linear in plot count. This is an honest finding about the
+   simulator's coupling to plot count and is appropriate evidence
+   for the dissertation's discussion of serverless function
+   scalability.
+
+The `pg_cron` job was re-scheduled afterwards via
+`select cron.schedule('agri-lite-simulate', '* * * * *', $$select public.agri_lite_fire_simulator();$$);`
+to restore the live one-minute cadence.
+
+### Acceptance checklist (post-finalisation)
+
+Re-walked the PRD §12 acceptance items against the deployed app
+populated with the five seeded plots; all 18 items previously verified
+remain green. The two outstanding items
+(Vercel daily cron's first run and the dissertation chapters
+themselves) are unchanged.
