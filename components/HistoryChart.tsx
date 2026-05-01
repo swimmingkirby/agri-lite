@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -40,6 +41,14 @@ export default function HistoryChart({
   notes,
   rangeMs,
 }: Props) {
+  // Defer the chart's first paint so Recharts measures a laid-out
+  // parent and avoids the "width(-1) and height(-1)" warning during
+  // hydration.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const data: Point[] = [...readings]
     .sort(
       (a, b) =>
@@ -67,6 +76,8 @@ export default function HistoryChart({
         <div className="flex h-56 items-center justify-center text-sm text-gray-500">
           Not enough data yet for this range.
         </div>
+      ) : !mounted ? (
+        <div className="h-56 w-full" />
       ) : (
         <div className="h-56 w-full">
           <ResponsiveContainer width="100%" height="100%">
