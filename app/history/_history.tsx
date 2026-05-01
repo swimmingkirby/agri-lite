@@ -12,6 +12,7 @@ import TimeRangeSelector, {
   type TimeRange,
 } from "@/components/TimeRangeSelector";
 import type { Note, Reading } from "@/lib/types";
+import { formatLocalDateTime } from "@/lib/format";
 
 export default function HistoryPage() {
   const searchParams = useSearchParams();
@@ -125,6 +126,35 @@ export default function HistoryPage() {
               rangeMs={rangeToSinceMs(range)}
             />
           </ChartErrorBoundary>
+
+          {notes.length > 0 && (
+            <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+              <h3 className="mb-3 text-sm font-semibold text-gray-900">
+                Notes in this window
+              </h3>
+              <ol className="space-y-2 text-sm">
+                {[...notes]
+                  .sort(
+                    (a, b) =>
+                      new Date(a.recorded_at).getTime() -
+                      new Date(b.recorded_at).getTime(),
+                  )
+                  .map((note, idx) => (
+                    <li key={note.id} className="flex gap-3">
+                      <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-700">
+                        {idx + 1}
+                      </span>
+                      <div>
+                        <span className="text-gray-900">{note.body}</span>
+                        <span className="ml-2 text-xs text-gray-500">
+                          {formatLocalDateTime(note.recorded_at)}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+              </ol>
+            </div>
+          )}
         </div>
       )}
     </div>

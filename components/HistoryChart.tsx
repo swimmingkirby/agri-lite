@@ -113,20 +113,27 @@ export default function HistoryChart({
                 dot={false}
                 isAnimationActive={false}
               />
-              {notes.map((note) => (
-                <ReferenceLine
-                  key={note.id}
-                  x={new Date(note.recorded_at).getTime()}
-                  stroke="#6b7280"
-                  strokeDasharray="2 2"
-                  label={{
-                    value: note.body.slice(0, 24),
-                    position: "top",
-                    fill: "#6b7280",
-                    fontSize: 10,
-                  }}
-                />
-              ))}
+              {[...notes]
+                .sort(
+                  (a, b) =>
+                    new Date(a.recorded_at).getTime() -
+                    new Date(b.recorded_at).getTime(),
+                )
+                .map((note, idx) => (
+                  <ReferenceLine
+                    key={note.id}
+                    x={new Date(note.recorded_at).getTime()}
+                    stroke="#6b7280"
+                    strokeDasharray="2 2"
+                    label={{
+                      value: String(idx + 1),
+                      position: "insideTop",
+                      fill: "#374151",
+                      fontSize: 11,
+                      fontWeight: 600,
+                    }}
+                  />
+                ))}
             </LineChart>
           </ResponsiveContainer>
         </ChartFrame>
