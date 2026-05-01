@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
+import ChartFrame from "./ChartFrame";
 import type { Parameter, Reading, Threshold } from "@/lib/types";
 import {
   PARAMETER_LABELS,
@@ -28,14 +28,6 @@ type Props = {
 };
 
 export default function ReadingCard({ parameter, readings, threshold }: Props) {
-  // Defer the sparkline render by one paint so Recharts'
-  // ResponsiveContainer measures a laid-out parent and avoids the
-  // "width(-1) and height(-1)" hydration warnings.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const latest = readings[0];
   const value = latest ? Number(latest[parameter]) : null;
   const status = computeStatus(value, threshold);
@@ -62,8 +54,8 @@ export default function ReadingCard({ parameter, readings, threshold }: Props) {
         </span>
       </div>
 
-      <div className="mt-3 h-10 w-full">
-        {mounted && sparkData.length > 1 ? (
+      <ChartFrame className="mt-3 h-10 w-full">
+        {sparkData.length > 1 ? (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={sparkData}
@@ -79,10 +71,8 @@ export default function ReadingCard({ parameter, readings, threshold }: Props) {
               />
             </LineChart>
           </ResponsiveContainer>
-        ) : (
-          <div className="h-full" />
-        )}
-      </div>
+        ) : null}
+      </ChartFrame>
 
       <p className="mt-2 text-xs text-gray-500">
         {latest
