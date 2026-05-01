@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import DashboardClient from "./_dashboard";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Dashboard | Agri-Lite",
+};
 
 export default function Page() {
   return (

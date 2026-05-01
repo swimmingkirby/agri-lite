@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import SettingsClient from "./_settings";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Settings | Agri-Lite",
+};
 
 export default function Page() {
   return (

@@ -3,7 +3,10 @@
 Simulated environmental monitoring for small-scale and DIY growers.
 Final-year dissertation project, University of Portsmouth.
 
-The full PRD lives at [(removed)]((removed)).
+**Live demo:** <https://agri-lite-woad.vercel.app>
+
+The full PRD lives at [(removed)]((removed)), and
+the verification log at [docs/verification.md](docs/verification.md).
 
 ## Stack
 
@@ -108,6 +111,49 @@ To wire the Supabase side after deploying:
 
 Verify the Vercel daily cron from the Vercel dashboard under **Cron
 Jobs**, and the Supabase minutely cron via `select * from cron.job`.
+
+## Demo scenarios
+
+Five biased random walks live alongside the live simulator so the
+dashboard, history view, threshold colours, and note markers can be
+exercised against meaningful data on demand. They are openly named
+demo aids — not a substitute for the live simulator and not real
+sensor data.
+
+| Scenario | Window | What it shows |
+| --- | --- | --- |
+| `healthy` | 7 days | Baseline; no warnings, no alerts |
+| `drought` | 4 days | Moisture falls 60 %→25 %, then recovers after a "watered the plot" note |
+| `heatwave` | 2 days | 6-hour spike to ~38 °C on day two with a "vents open" note at the peak |
+| `light_deprivation` | 5 days | Light pinned below the configured minimum |
+| `mixed` | 7 days | Drought, recovery, heatwave, two cloudy days, four notes |
+
+Trigger one with curl:
+
+```bash
+curl -X POST https://agri-lite-woad.vercel.app/api/seed \
+  -H "Authorization: Bearer ${CRON_SECRET}" \
+  -H "Content-Type: application/json" \
+  -d '{"plot_id":"<plot uuid>","scenario":"drought"}'
+```
+
+The endpoint wipes the target plot's existing readings, notes and
+thresholds before seeding so each scenario stays self-contained. The
+live simulator continues adding new readings every minute on top of
+the seeded history.
+
+## Architectural notes
+
+- **Cron cadence.** Vercel Hobby caps cron jobs at one run per day, so
+  `vercel.json` is configured at `0 6 * * *` as the architectural
+  marker that the API works under Vercel cron. The actual one-minute
+  cadence required by FR1 is driven by a Supabase `pg_cron` job that
+  POSTs the same `/api/cron/simulate` endpoint. The bearer token lives
+  in Supabase Vault, not inline in any cron definition.
+- **No authentication.** Single-user demo by deliberate scope decision
+  (PRD §3). The browser uses the Supabase `anon` key, which has only
+  `SELECT` policies — all writes go through Next.js API routes that
+  use the service-role key on the server.
 
 ## Project layout
 
