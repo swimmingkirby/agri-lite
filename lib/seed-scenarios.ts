@@ -146,6 +146,13 @@ export const SCENARIOS: Record<ScenarioName, Scenario> = {
       { offsetMinutes: 22 * 24 * 60 + 3 * 60,          moisture: 49, temperature: 35, light: 0 }, // peak
       { offsetMinutes: 22 * 24 * 60 + 6 * 60,          moisture: 49, temperature: 28, light: 0 },
       { offsetMinutes: 24 * 24 * 60,                   moisture: 52, temperature: 22, light: 0 },
+      // Heatwave 4: day 27, moderate, ~36 °C peak — keeps an event in the
+      // most-recent-7-days window so the History view's 7-day pill always
+      // shows a heatwave.
+      { offsetMinutes: 27 * 24 * 60,                   moisture: 51, temperature: 26, light: 0 },
+      { offsetMinutes: 27 * 24 * 60 + 5 * 60,          moisture: 47, temperature: 36, light: 0 }, // peak
+      { offsetMinutes: 27 * 24 * 60 + 10 * 60,         moisture: 48, temperature: 28, light: 0 },
+      { offsetMinutes: 28 * 24 * 60 + 12 * 60,         moisture: 51, temperature: 23, light: 0 },
       { offsetMinutes: 30 * 24 * 60,                   moisture: 55, temperature: 21, light: 0 },
     ],
     notes: [
@@ -153,6 +160,7 @@ export const SCENARIOS: Record<ScenarioName, Scenario> = {
       { offsetMinutes: 13 * 24 * 60 + 8 * 60,          body: 'Severe heatwave — vents fully open, shade cloth deployed.' },
       { offsetMinutes: 14 * 24 * 60,                   body: 'Heatwave continued through the night, watering after dark.' },
       { offsetMinutes: 22 * 24 * 60 + 3 * 60,          body: 'Brief heat spike this afternoon.' },
+      { offsetMinutes: 27 * 24 * 60 + 5 * 60,          body: 'Late-month heat returned, vents back open.' },
     ],
     thresholds: [
       { parameter: 'moisture',    min_value: 30, max_value: 80 },
@@ -185,8 +193,14 @@ export const SCENARIOS: Record<ScenarioName, Scenario> = {
       { offsetMinutes: 19 * 24 * 60,                   moisture: 55, temperature: 21, light: 38000 },
       { offsetMinutes: 20 * 24 * 60,                   moisture: 56, temperature: 19, light: 25000 },
       { offsetMinutes: 21 * 24 * 60,                   moisture: 57, temperature: 18, light: 1800 },
-      // Final cloudy week
-      { offsetMinutes: 26 * 24 * 60,                   moisture: 57, temperature: 17, light: 1000 },
+      // Sunny break 3: days 26-27 — ensures the History view's 7-day pill
+      // always shows at least one sunny break.
+      { offsetMinutes: 25 * 24 * 60 + 18 * 60,         moisture: 56, temperature: 18, light: 4500 },
+      { offsetMinutes: 26 * 24 * 60,                   moisture: 56, temperature: 19, light: 25000 },
+      { offsetMinutes: 26 * 24 * 60 + 12 * 60,         moisture: 55, temperature: 21, light: 35000 },
+      { offsetMinutes: 27 * 24 * 60 + 12 * 60,         moisture: 56, temperature: 19, light: 22000 },
+      // Final cloudy stretch
+      { offsetMinutes: 28 * 24 * 60,                   moisture: 57, temperature: 17, light: 1200 },
       { offsetMinutes: 30 * 24 * 60,                   moisture: 56, temperature: 17, light: 1100 },
     ],
     notes: [
@@ -194,7 +208,8 @@ export const SCENARIOS: Record<ScenarioName, Scenario> = {
       { offsetMinutes: 8 * 24 * 60,                    body: 'Brief sunny break, plants soaking it in.' },
       { offsetMinutes: 14 * 24 * 60,                   body: 'Considering supplemental grow lights.' },
       { offsetMinutes: 19 * 24 * 60,                   body: 'Sun returned for a couple of days.' },
-      { offsetMinutes: 26 * 24 * 60,                   body: 'Cloudy spell continues into final week.' },
+      { offsetMinutes: 26 * 24 * 60,                   body: 'Another sunny break, much-needed light.' },
+      { offsetMinutes: 28 * 24 * 60 + 12 * 60,         body: 'Cloudy spell back, supplemental lights ordered.' },
     ],
     thresholds: [
       { parameter: 'moisture',    min_value: 30, max_value: 80 },
