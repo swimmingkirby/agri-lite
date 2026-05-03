@@ -5,8 +5,7 @@ Final-year dissertation project, University of Portsmouth.
 
 **Live demo:** <https://agri-lite-woad.vercel.app>
 
-The full PRD lives at [(removed)]((removed)), and
-the verification log at [docs/verification.md](docs/verification.md).
+Verification log: [docs/verification.md](docs/verification.md).
 
 ## Stack
 
@@ -151,7 +150,7 @@ the seeded history.
   POSTs the same `/api/cron/simulate` endpoint. The bearer token lives
   in Supabase Vault, not inline in any cron definition.
 - **No authentication.** Single-user demo by deliberate scope decision
-  (PRD §3). The browser uses the Supabase `anon` key, which has only
+  (deliberate scope decision). The browser uses the Supabase `anon` key, which has only
   `SELECT` policies — all writes go through Next.js API routes that
   use the service-role key on the server.
 
@@ -172,7 +171,7 @@ lib/
   format.ts, threshold.ts     # display + status helpers
   types.ts
 supabase/migrations/          # 0001_initial.sql
-(removed)         # the requirements doc
+docs/verification.md          # post-build verification log
 vercel.json                   # cron config
 ```
 
@@ -190,7 +189,7 @@ vercel.json                   # cron config
 | FR12 | reference lines on history chart |
 | FR13 | API routes deploy as Vercel serverless functions |
 | FR15 | empty states on dashboard |
-| NFR1–NFR8 | see PRD section 6; verified during evaluation |
+| NFR1–NFR8 | verified during evaluation |
 
 ## Useful commands
 

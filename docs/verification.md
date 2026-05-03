@@ -4,7 +4,7 @@ Production deployment verified end-to-end against
 <https://agri-lite-woad.vercel.app>. This document maps each
 PRD checklist item to the evidence captured during the verification run.
 
-## Acceptance checklist (PRD section 12)
+## Acceptance checklist
 
 | # | Item | Tag | Result | Evidence |
 | --- | --- | --- | --- | --- |
@@ -29,7 +29,7 @@ PRD checklist item to the evidence captured during the verification run.
 | 19 | Repository on GitHub | — | ✅ | <https://github.com/swimmingkirby/agri-lite> (public). |
 | 20 | No login or signup anywhere | — | ✅ | No auth UI; no Supabase Auth client imported anywhere; no `/login` or `/signup` routes. |
 
-## Performance (PRD section 11.19–21)
+## Performance verification
 
 ### NFR1 — warm API latency
 
@@ -111,9 +111,10 @@ verified:
 
 ## Finalisation pass (2026-05-01)
 
-Driven by the master finalisation prompt
-(`finalisation notes`). Source code, schema and PRD
-were unchanged during this pass except where listed.
+Hardening, enrichment and final-pass work after the initial
+verification confirmed the build was functionally complete. Source
+code, schema and design contracts were unchanged during this pass
+except where listed.
 
 ### Demo scenarios seeder (FR1, FR2, FR14)
 
@@ -245,7 +246,7 @@ to restore the live one-minute cadence.
 
 ### Acceptance checklist (post-finalisation)
 
-Re-walked the PRD §12 acceptance items against the deployed app
+Re-walked the original acceptance checklist items against the deployed app
 populated with the five seeded plots; all 18 items previously verified
 remain green. The two outstanding items
 (Vercel daily cron's first run and the dissertation chapters
